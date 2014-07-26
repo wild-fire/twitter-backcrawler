@@ -8,12 +8,12 @@ program :version, '0.0.1'
 program :description, 'Script for fetching old tweets'
  
 command :search do |c|
-  c.syntax = 'Twitter Backcrawler search first-tweet-id last-tweet-id keywords'
-  c.summary = 'It returns tweets between the first and last tweets ids containing the desired keywords'
+  c.syntax = 'Twitter Backcrawler search tweet-id keywords'
+  c.summary = 'It returns tweets before the tweets id containing the desired keywords'
   c.description = ''
   c.action do |args, options|
-    if args.length != 3
-      puts "Please, provide first tweet id, last tweet id and keywords"
+    if args.length != 2
+      puts "Please, provide first tweet id and keywords"
     else
       BackCrawler.search *args do |tweet|
         puts [
