@@ -25,7 +25,8 @@ class BackCrawler
         yield tweet
       end
       _, first_id, last_id, _ = response['scroll_cursor'].split('-')
-      cursor = "#{first_id}-#{last_id}1"
+      cursor = "#{first_id}-#{last_id}"
+      sleep 5
     end
   end
 
