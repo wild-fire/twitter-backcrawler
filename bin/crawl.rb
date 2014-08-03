@@ -36,7 +36,6 @@ command :search do |c|
               tweet[:user][:id],
               "\"#{tweet[:text].gsub('"', "'")}\""
             ].join ','
-            asd.asd
         end
       rescue Exception => e
         TwitterExceptionNotifier.notify "Error #{e.message}. #{e.backtrace}."
