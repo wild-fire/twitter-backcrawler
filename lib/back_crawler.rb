@@ -22,7 +22,7 @@ class BackCrawler
         tweet[:text] = tweet_div.css('.tweet-text').first.text
         tweet[:time] = Time.at(tweet_div.css('._timestamp').first['data-time'].to_i).to_datetime
         tweet[:timestamp] = tweet_div.css('._timestamp').first['data-time']
-        yield tweet
+        yield tweet, cursor
       end
       _, first_id, last_id, _ = response['scroll_cursor'].split('-')
       cursor = "#{first_id}-#{last_id}"
