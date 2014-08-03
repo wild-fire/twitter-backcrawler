@@ -25,8 +25,8 @@ command :search do |c|
 
       begin
         BackCrawler.search *args do |tweet, cursor|
-          if tweet.id > first_tweet_id
-            TwitterExceptionNotifier.notify "Cursor: #{cursor}. Tweet #{tweet.id} greater than first tweet #{first_tweet_id}."
+          if tweet[:id] > first_tweet_id
+            TwitterExceptionNotifier.notify "Cursor: #{cursor}. Tweet #{tweet[:id]} greater than first tweet #{first_tweet_id}."
           end
           puts [
               tweet[:id],
