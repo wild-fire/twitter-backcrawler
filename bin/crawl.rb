@@ -13,13 +13,20 @@ command :search do |c|
   c.summary = 'It returns tweets before the tweets id containing the desired keywords'
   c.description = ''
   c.option '--twitter_config_file path/to/config.yml', String, 'Path to twitter config file (default: config/twitter.yml)'
+  c.option '--restart_file path/to/restart_file', String, 'Path to a restart file (containing last fetched tweet id and keywords)'
+
   c.action do |args, options|
-    options.default :twitter_config_file  => 'config/twitter.yml'
-    if args.length != 2
+
+    options.default twitter_config_file: 'config/twitter.yml',
+      restart_file:  nil
+
+    if args.length != 2 && !options.restart_file
       puts "Please, provide first tweet id and keywords"
     else
 
       TwitterExceptionNotifier.config options.twitter_config_file
+
+      args = File.open(options.restart_file, "r").read.split(' ', 2) if options.restart_file
 
       first_tweet_id = args.first
 
@@ -36,6 +43,9 @@ command :search do |c|
               tweet[:user][:id],
               "\"#{tweet[:text].gsub('"', "'")}\""
             ].join ','
+          if options.restart_file
+            File.open(options.restart_file, "w") { |file| file.write "#{tweet[:id]} #{args[1]}" }
+          end
         end
       rescue Exception => e
         TwitterExceptionNotifier.notify "Error #{e.message}. #{e.backtrace}."
