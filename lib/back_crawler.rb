@@ -6,7 +6,7 @@ class BackCrawler
 
   def self.search first_tweet_id,  keywords
     twitter_url = "https://twitter.com/i/search/timeline?q=#{URI::escape(keywords)}&f=realtime&src=typd&include_available_features=1&include_entities=1"
-    cursor = "#{first_tweet_id}-#{first_tweet_id}1"
+    cursor = "#{first_tweet_id}-#{first_tweet_id.to_i+1}"
 
     while true do
       doc = open("#{twitter_url}&scroll_cursor=TWEET-#{cursor}").read
