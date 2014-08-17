@@ -29,20 +29,23 @@ command :lookup do |c|
             # This way we extract the urls and (sorry) join them into the urls field
             urls = Twitter::Extractor.extract_urls tweet.text
             csv << [
-              tweet.id,
-              tweet.user.id,
-              tweet.user.screen_name,
-              tweet.in_reply_to_status_id,
-              tweet.in_reply_to_user_id,
-              tweet.in_reply_to_screen_name,
-              tweet.hashtags.map(&:text).join(','),
-              tweet.user_mentions.map(&:id).join(','),
-              tweet.user_mentions.map(&:screen_name).join(','),
-              (tweet.uris.map(&:url) + urls).uniq.join(','),
-              tweet.uris.map(&:expanded_url).join(','),
-              tweet.media.map(&:uri).join(','),
-              tweet.media.map(&:expanded_uri).join(','),
-              tweet.text
+              tweet.id,                                                         # tweet id
+              tweet.user.id,                                                    # user id
+              tweet.user.screen_name,                                           # user screen name
+              tweet.in_reply_to_status_id,                                      # reply status
+              tweet.in_reply_to_user_id,                                        # reply user id
+              tweet.in_reply_to_screen_name,                                    # reply user name
+              tweet.user_mentions.map(&:id).join(','),                          # mentioned users ids
+              tweet.user_mentions.map(&:screen_name).join(','),                 # mentioned user names
+              tweet.retweet? ? tweet.retweeted_status.id : nil,                 # retweeted tweet id
+              tweet.retweet? ? tweet.retweeted_status.user.id : nil,            # retweeted user id
+              tweet.retweet? ? tweet.retweeted_status.user.screen_name : nil,   # retweeted user name
+              tweet.hashtags.map(&:text).join(','),                             # hashtags
+              (tweet.uris.map(&:url) + urls).uniq.join(','),                    # URLS
+              tweet.uris.map(&:expanded_url).join(','),                         # URLS expanded
+              tweet.media.map(&:uri).join(','),                                 # Media URL
+              tweet.media.map(&:expanded_uri).join(','),                        # Expanded media URL
+              tweet.text                                                        # Text
             ]
           end
         end
