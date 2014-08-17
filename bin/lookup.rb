@@ -3,6 +3,7 @@
 require 'rubygems'
 require 'csv'
 require 'commander/import'
+require 'twitter-text'
 require_relative '../lib/lookup.rb'
 
 program :version, '0.0.1'
@@ -24,6 +25,9 @@ command :lookup do |c|
       Lookup.lookup initial_id, last_id do |tweets|
         CSV.open(csv_path, "a") do |csv|
           tweets.each do |tweet|
+            # the tweet brings the entities information from the API, but the oldest tweets come without any url entity, even when there's some
+            # This way we extract the urls and (sorry) join them into the urls field
+            urls = Twitter::Extractor.extract_urls tweet.text
             csv << [
               tweet.id,
               tweet.user.id,
@@ -34,7 +38,7 @@ command :lookup do |c|
               tweet.hashtags.map(&:text).join(','),
               tweet.user_mentions.map(&:id).join(','),
               tweet.user_mentions.map(&:screen_name).join(','),
-              tweet.uris.map(&:url).join(','),
+              (tweet.uris.map(&:url) + urls).uniq.join(','),
               tweet.uris.map(&:expanded_url).join(','),
               tweet.media.map(&:uri).join(','),
               tweet.media.map(&:expanded_uri).join(','),
