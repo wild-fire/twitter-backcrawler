@@ -1,3 +1,4 @@
+require 'yaml'
 require 'twitter'
 
 class Lookup
@@ -13,11 +14,11 @@ class Lookup
   # Otherwise, the counter method for controlling the rate limit would be useless
   def self.client
     @@client ||= Twitter::REST::Client.new do |config|
-      yml_config = YAML.load_file( File.expand_path('../config/twitter.yml', File.dirname(__FILE__)) )['twitter'].symbolize_keys
-      config.consumer_key        = yml_config[:consumer_key]
-      config.consumer_secret     = yml_config[:consumer_secret]
-      config.access_token        = yml_config[:access_token]
-      config.access_token_secret = yml_config[:access_token_secret]
+      yml_config = YAML.load_file( File.expand_path('../config/twitter.yml', File.dirname(__FILE__)) )['twitter']
+      config.consumer_key        = yml_config['consumer_key']
+      config.consumer_secret     = yml_config['consumer_secret']
+      config.access_token        = yml_config['access_token']
+      config.access_token_secret = yml_config['access_token_secret']
     end
     # Since we can't control when the API is called we decrement the counter here, hoping that when the client is called only 1 API call is made
     @@remaining_calls -= 1
@@ -26,7 +27,7 @@ class Lookup
 
   # This method obtains the rate limit info for the users API
   def self.rate_limit_info
-    rate_info = WeekSegmenter.client.get '/1.1/application/rate_limit_status.json?resources=statuses'
+    rate_info = Lookup.client.get '/1.1/application/rate_limit_status.json?resources=statuses'
     rate_info.body[:resources][:statuses][:"/statuses/lookup"]
   end
 
@@ -37,6 +38,7 @@ class Lookup
     if @@remaining_calls < 5
       # We get the rate limit info
       rate_info = rate_limit_info
+      log rate_info.inspect
       # Since we are using a counter and not perform this check with every API call we must give some space or we can fall into the rate limit without noticing
       # Our space are 20 API calls. If we have less than 20 we stop
       if rate_info[:remaining] < 20
@@ -58,9 +60,13 @@ class Lookup
     begin
       tweet_ids, next_tweet_id = ids_to_fetch(initial_tweet_id)
       log "Fetching from #{tweet_ids.first} to #{tweet_ids.last}"
+      self.sleep_until_rate_limit
       tweets = self.client.statuses tweet_ids
 
       yield tweets if block_given?
+
+      last_tweet_id = next_tweet_id + 1 if never_end
+      initial_tweet_id = next_tweet_id
 
     end while last_tweet_id > next_tweet_id
 
@@ -80,7 +86,13 @@ class Lookup
 
     # We get the info of our current jump interval
     current_id_jump = @@jumps.keys.select{|i| i <= tweet_id }.max
-    current_jump_step = @@jumps[current_id_jump]
+    current_jump_step = @@jumps[current_id_jump][:step]
+
+    # We check that this tweet id fits in the step for this interval
+    # Otherwise we decrement this tweet id until it fits, using the modulo operator
+    modulo = (tweet_id - current_id_jump) % current_jump_step
+    # If it's a correct tweet id then modulo will be 0
+    tweet_id -= modulo
 
     # We get the minimum tweet id next to our tweet_id
     next_id_jump = @@jumps.keys.select{|i| i > tweet_id }.min
@@ -90,7 +102,7 @@ class Lookup
       if tweet_id >= next_id_jump
         tweet_id = next_id_jump
         current_id_jump = next_id_jump
-        current_jump_step = @@jumps[current_id_jump]
+        current_jump_step = @@jumps[current_id_jump][:step]
       end
 
       tweet_ids << tweet_id
