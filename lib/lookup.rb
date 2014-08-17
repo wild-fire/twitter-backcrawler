@@ -99,7 +99,7 @@ class Lookup
 
     while tweet_ids.count < 101
       # If we enter into the next interval then we reset the tweet_id, current interval info and next interval info
-      if tweet_id >= next_id_jump
+      if next_id_jump && tweet_id >= next_id_jump
         tweet_id = next_id_jump
         current_id_jump = next_id_jump
         current_jump_step = @@jumps[current_id_jump][:step]
