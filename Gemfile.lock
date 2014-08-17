@@ -33,6 +33,11 @@ GEM
       memoizable (~> 0.4.0)
       naught (~> 1.0)
       simple_oauth (~> 0.2.0)
+    twitter-text (1.9.2)
+      unf (~> 0.1.0)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.6)
 
 PLATFORMS
   ruby
@@ -41,3 +46,4 @@ DEPENDENCIES
   commander
   nokogiri
   twitter
+  twitter-text
