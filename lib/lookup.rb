@@ -60,8 +60,14 @@ class Lookup
     begin
       tweet_ids, next_tweet_id = ids_to_fetch(initial_tweet_id)
       log "Fetching from #{tweet_ids.first} to #{tweet_ids.last}"
-      self.sleep_until_rate_limit
-      tweets = self.client.statuses tweet_ids
+      begin
+        self.sleep_until_rate_limit
+        tweets = self.client.statuses tweet_ids
+      rescue Twitter::Error::RequestTimeout
+        retry
+      end
+      
+      tweets.sort_by!(&:id)
 
       yield tweets if block_given?
 
