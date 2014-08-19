@@ -44,7 +44,7 @@ class Lookup
       if rate_info[:remaining] < 20
         # And now here we sleep until the reset time for the rate limit
         log "Now I'm going to sleep until I have enough rate (#{Time.at rate_info[:reset]} - #{Time.at(rate_info[:reset]) - Time.now} seconds)"
-        sleep(Time.at(rate_info[:reset]) - Time.now)
+        sleep((Time.at(rate_info[:reset]) - Time.now).abs)
       else
         log "Remaining calls #{rate_info[:remaining]} until #{Time.at rate_info[:reset]}"
       end
