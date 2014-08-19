@@ -63,7 +63,7 @@ class Lookup
       begin
         self.sleep_until_rate_limit
         tweets = self.client.statuses tweet_ids
-      rescue Twitter::Error::RequestTimeout
+      rescue 
         retry
       end
       
